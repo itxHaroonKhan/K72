@@ -1,38 +1,115 @@
-import React, { useContext, useRef } from 'react'
-import { NavbarColorContext, NavbarContext } from '../../context/NavContext'
+import React, { useContext, useEffect, useRef, useState } from 'react'
+import { NavbarContext } from '../../context/NavContext'
+import { useLocation, Link } from 'react-router-dom'
+
+const NAV_LINKS = [
+  { path: '/',            label: 'Home' },
+  { path: '/services',    label: 'Services' },
+  { path: '/portfolio',   label: 'Portfolio' },
+  { path: '/technologies',label: 'Tech' },
+  { path: '/about',       label: 'About' },
+]
 
 const Navbar = () => {
+  const [navOpen, setNavOpen] = useContext(NavbarContext)
+  const [scrolled, setScrolled]   = useState(false)
+  const location = useLocation()
+  const isHome   = location.pathname === '/'
+  const lineRef1 = useRef(null)
+  const lineRef2 = useRef(null)
 
-    const navGreenRef = useRef(null)
-    const [navOpen,setNavOpen] = useContext(NavbarContext)
-    const [navColor, setNavColor] = useContext(NavbarColorContext)
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 50)
+    window.addEventListener('scroll', onScroll, { passive: true })
+    return () => window.removeEventListener('scroll', onScroll)
+  }, [])
 
-    return (
-        <div className='z-4 flex fixed top-0 w-full items-start justify-between'>
-            <div className='lg:p-5 p-2 '>
-                <div className='lg:w-36 w-24'>
-                    <svg className=' w-full' xmlns="http://www.w3.org/2000/svg" viewBox="0 0 103 44">
-                        <path fill={navColor} fillRule="evenodd" d="M35.1441047,8.4486911 L58.6905011,8.4486911 L58.6905011,-1.3094819e-14 L35.1441047,-1.3094819e-14 L35.1441047,8.4486911 Z M20.0019577,0.000230366492 L8.83414254,25.3433089 L18.4876971,25.3433089 L29.5733875,0.000230366492 L20.0019577,0.000230366492 Z M72.5255345,0.000691099476 L72.5255345,8.44846073 L94.3991559,8.44846073 L94.3991559,16.8932356 L72.5275991,16.8932356 L72.5275991,19.5237906 L72.5255345,19.5237906 L72.5255345,43.9274346 L102.80937,43.9274346 L102.80937,35.4798953 L80.9357483,35.4798953 L80.9357483,25.3437696 L94.3996147,25.3428482 L94.3996147,16.8953089 L102.80937,16.8953089 L102.80937,0.000691099476 L72.5255345,0.000691099476 Z M-1.30398043e-14,43.9278953 L8.78642762,43.9278953 L8.78642762,0.0057591623 L-1.30398043e-14,0.0057591623 L-1.30398043e-14,43.9278953 Z M58.6849955,8.4486911 L43.1186904,43.9274346 L52.3166592,43.9274346 L67.9877996,8.4486911 L58.6849955,8.4486911 Z M18.4688864,25.3437696 L26.7045278,43.9278953 L36.2761871,43.9278953 L28.1676325,25.3375497 L18.4688864,25.3437696 Z"></path>
-                    </svg>
-                </div>
-            </div>
-            <div onClick={()=>{
-                setNavOpen(true)
-            }} onMouseEnter={() => {
-                navGreenRef.current.style.height = '100%'
-            }}
-                onMouseLeave={() => {
-                    navGreenRef.current.style.height = '0%'
-                }}
-                className='lg:h-16 h-10 bg-black relative lg:w-[16vw] w-48'>
-                <div ref={navGreenRef} className='bg-[#D3FD50] transition-all absolute top-0 h-0 w-full'></div>
-                <div className='relative h-full lg:px-12 px-8 flex flex-col justify-center items-end lg:gap-1.5 gap-0.5'>
-                    <div className="lg:w-18 w-12 h-0.5 bg-white"></div>
-                    <div className="lg:w-10 w-6 h-0.5 bg-white"></div>
-                </div>
-            </div>
-        </div>
-    )
+  const handleEnter = () => {
+    if (lineRef1.current) lineRef1.current.style.width = '100%'
+    if (lineRef2.current) lineRef2.current.style.width = '60%'
+  }
+  const handleLeave = () => {
+    if (lineRef1.current) lineRef1.current.style.width = '70%'
+    if (lineRef2.current) lineRef2.current.style.width = '40%'
+  }
+
+  return (
+    <nav className={`z-40 flex fixed top-0 w-full items-center justify-between transition-all duration-500 ${
+      scrolled || !isHome
+        ? 'bg-[#020a14]/95 backdrop-blur-xl border-b border-[#0066ff]/12 shadow-[0_1px_40px_rgba(0,102,255,0.08)]'
+        : 'bg-[#020a14]/40 backdrop-blur-sm border-b border-white/[0.04]'
+    }`}>
+
+      {/* ── Logo ── */}
+      <Link to="/" className='lg:px-8 lg:py-3.5 px-5 py-2.5 flex items-center flex-shrink-0'>
+        <img
+          src="/Logoo.png"
+          alt="Software Elites"
+          className='h-7 lg:h-8 w-auto object-contain'
+          style={{ maxWidth: '130px' }}
+        />
+      </Link>
+
+      {/* ── Center links (desktop) ── */}
+      <div className='hidden lg:flex items-center gap-1'>
+        {NAV_LINKS.map(({ path, label }) => {
+          const active = location.pathname === path
+          return (
+            <Link key={path} to={path}
+              className={`relative font-[font1] text-[10px] uppercase tracking-[3px] px-4 py-2 transition-all duration-300 group ${
+                active ? 'text-[#0066ff]' : 'text-white/45 hover:text-white'
+              }`}>
+              {label}
+              {/* Active underline */}
+              <span className={`absolute bottom-0 left-1/2 -translate-x-1/2 h-[1.5px] bg-[#0066ff] transition-all duration-300 ${
+                active ? 'w-4' : 'w-0 group-hover:w-3'
+              }`} />
+            </Link>
+          )
+        })}
+      </div>
+
+      {/* ── Right side: contact link + hamburger ── */}
+      <div className='flex items-center flex-shrink-0'>
+
+        {/* Contact link (desktop only) */}
+        <Link to='/contact'
+          className='hidden lg:flex items-center gap-2 font-[font1] text-[10px] uppercase tracking-[3px] text-white/40 hover:text-[#0066ff] transition-colors duration-300 px-6'>
+          <span className='h-px w-4 bg-current' />
+          Contact
+        </Link>
+
+        {/* Hamburger button */}
+        <button
+          onClick={() => setNavOpen(true)}
+          onMouseEnter={handleEnter}
+          onMouseLeave={handleLeave}
+          className='lg:h-[54px] h-[44px] lg:w-[160px] w-[110px] relative overflow-hidden cursor-pointer flex items-center justify-between lg:px-8 px-4 border-l border-[#0066ff]/20 group transition-all duration-300'
+          style={{ background: 'linear-gradient(135deg, rgba(0,102,255,0.12) 0%, rgba(0,102,255,0.06) 100%)' }}
+        >
+          {/* Hover fill */}
+          <div className='absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300'
+            style={{ background: 'linear-gradient(135deg, rgba(0,102,255,0.25) 0%, rgba(0,102,255,0.12) 100%)' }} />
+
+          {/* Blue left accent line */}
+          <div className='absolute left-0 top-0 bottom-0 w-[2px] bg-[#0066ff] opacity-60 group-hover:opacity-100 transition-opacity duration-300' />
+
+          {/* Lines */}
+          <div className='relative flex flex-col gap-[5px]'>
+            <div ref={lineRef1} className='h-[1.5px] bg-white transition-all duration-400' style={{ width: '70%' }} />
+            <div ref={lineRef2} className='h-[1.5px] bg-white/60 transition-all duration-400' style={{ width: '40%' }} />
+          </div>
+
+          {/* Text */}
+          <div className='relative flex flex-col items-end'>
+            <span className='font-[font1] text-white text-[8px] uppercase tracking-[3px] leading-none'>Menu</span>
+            <span className='font-[font2] text-[#0066ff]/70 text-[10px] leading-none mt-[3px]'>07</span>
+          </div>
+        </button>
+      </div>
+
+    </nav>
+  )
 }
 
 export default Navbar
